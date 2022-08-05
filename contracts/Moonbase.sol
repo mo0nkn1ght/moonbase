@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 /*
       ___           ___           ___           ___           ___           ___           ___           ___     
      /\__\         /\  \         /\  \         /\__\         /\  \         /\  \         /\  \         /\  \    
@@ -854,10 +854,10 @@ contract Moonbase is ERC20, Ownable {
     address public uniswapV2Pair;
     address public developerWallet = 0xf8E566f3BC04d33c07aC312b7Ebc37112eaeD143;
     address public marketingWallet = 0x6DC63b1B7e6e076f4Ee8dA44B96671CE081a8980;
-    address public liqWallet = 0x4d730375Eaa13456544743fcc521f6fBdbCB28FF; 
+    address public liqWallet = 0x52FC23AfB047C5eeD7CA5B03F1795CBe2731fFaA; 
     address public _lunaDividendToken;
     address public deadWallet = 0x000000000000000000000000000000000000dEaD;
-    address public lunaAddress = 0xd2877702675e6cEb975b4A1dFf9fb7BAF4C91ea9;
+    address public lunaAddress = 0x156ab3346823B651294766e23e6Cf87254d68962; // WLUNA Wormhole Token 
  //bool
     bool public developerSwapSendActive = true;
     bool public marketingSwapSendActive = true;
@@ -877,7 +877,7 @@ contract Moonbase is ERC20, Ownable {
 
  //uint
     uint256 public buySecondsLimit = 25;
-    uint256 public minimumWeiForTokenomics = 1 * 10**16; // 0.01 eth
+    uint256 public minimumWeiForTokenomics = 1 * 10**16; // 0.01 bnb
     uint256 public maxBuyTxAmount; // 5% total supply (constructor)
     uint256 public maxSellTxAmount;// 5% total supply (constructor)
     uint256 public minimumTokensBeforeSwap = 1_000_000 *10**decimals();
@@ -1056,9 +1056,9 @@ contract Moonbase is ERC20, Ownable {
     function setMultiBlock(bool _state) external onlyOwner {
         blockMultiBuys = _state;
     }
-    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
+    function addLiquidity(uint256 tokenAmount, uint256 bnbAmount) private {
         _approve(address(this), address(uniswapV2Router), tokenAmount);
-        uniswapV2Router.addLiquidityETH{value: ethAmount}(
+        uniswapV2Router.addLiquidityETH{value: bnbAmount}(
             address(this),
             tokenAmount,
             0,
@@ -1185,16 +1185,16 @@ contract Moonbase is ERC20, Ownable {
         uint256 balancez = address(this).balance;
 
         if(developerSwapSendActive && developerSellFee > 0) {
-            uint256 developerEth = balancez.mul(developerSellFee).div(totalSellFees);
-            (bool success,) = address(developerWallet).call{value: developerEth}("");
-            if(success) {emit DeveloperFeeCollected(developerEth);}
-            balancez -= developerEth;
+            uint256 developerBnb = balancez.mul(developerSellFee).div(totalSellFees);
+            (bool success,) = address(developerWallet).call{value: developerBnb}("");
+            if(success) {emit DeveloperFeeCollected(developerBnb);}
+            balancez -= developerBnb;
         }
         if(marketingSwapSendActive  && WLUNABurnSellFee > 0) {
-            uint256 marketingEth = balancez.mul(WLUNABurnSellFee).div(totalSellFees);
-            (bool success,) = address(marketingWallet).call{value: marketingEth}("");
-            if(success) {emit MarketingFeeCollected(marketingEth);}
-            balancez -= marketingEth;
+            uint256 marketingBnb = balancez.mul(WLUNABurnSellFee).div(totalSellFees);
+            (bool success,) = address(marketingWallet).call{value: marketingBnb}("");
+            if(success) {emit MarketingFeeCollected(marketingBnb);}
+            balancez -= marketingBnb;
         }
         if(LiqSwapSendActive){
             uint256 liqBnb = balancez.mul(liqSellFee).div(totalSellFees);
