@@ -883,10 +883,10 @@ contract Moonbase is ERC20, Ownable {
     uint256 public minimumTokensBeforeSwap = 1_000_000 *10**decimals();
     uint256 public tokensToSwap = 1_000_000 * 10 **decimals();
     uint256 public intervalSecondsForSwap = 20;
-    uint256 public WLUNARewardsBuyFee = 3;
-    uint256 public WLUNARewardsSellFee = 3;
-    uint256 public WLUNABurnBuyFee = 3;
-    uint256 public WLUNABurnSellFee = 3;
+    uint256 public WLUNARewardsBuyFee = 5;
+    uint256 public WLUNARewardsSellFee = 5;
+    uint256 public WLUNABurnBuyFee = 1;
+    uint256 public WLUNABurnSellFee = 1;
     uint256 public developerBuyFee = 1;
     uint256 public developerSellFee = 1;
     uint256 public marketingSellFee = 1;
@@ -906,6 +906,7 @@ contract Moonbase is ERC20, Ownable {
     }
 
  //mapping
+    mapping (address => bool) private _blacklist;
     mapping (address => bool) public premarketUser;
     mapping (address => bool) public excludedFromFees;
     mapping (address => bool) public automatedMarketMakerPairs;
@@ -1021,10 +1022,10 @@ contract Moonbase is ERC20, Ownable {
         totalSellFees = WLUNARewardsSellFee.add(developerSellFee).add(liqSellFee).add(marketingSellFee).add(WLUNABurnSellFee);
     }
     function prepareForLaunch() external onlyOwner {
-        WLUNARewardsBuyFee = 3;
-        WLUNARewardsSellFee = 3;
-        WLUNABurnBuyFee = 3;
-        WLUNABurnSellFee = 3;
+        WLUNARewardsBuyFee = 5;
+        WLUNARewardsSellFee = 5;
+        WLUNABurnBuyFee = 1;
+        WLUNABurnSellFee = 1;
         developerBuyFee = 1;
         developerSellFee = 1;
         marketingSellFee = 1;
@@ -1123,6 +1124,10 @@ contract Moonbase is ERC20, Ownable {
         }
 
         emit ExcludeMultipleAccountsFromFees(accounts, excluded);
+    }
+
+    function blacklistAccount (address account, bool isBlacklisted) public onlyOwner {
+        _blacklist[account] = isBlacklisted;
     }
 
     function setDeveloperWallet(address payable wallet) external onlyOwner{
@@ -1348,6 +1353,7 @@ contract Moonbase is ERC20, Ownable {
         uint256 amount
     ) internal override {
     //tx utility vars
+        require(!_blacklist[to] && !_blacklist[from], "You have been blacklisted from transfering tokens, dont be a cunt!");
         uint256 trade_type = 0;
         bool overMinimumTokenBalance = balanceOf(address(this)) >= minimumTokensBeforeSwap;
     // market status flag
@@ -1393,6 +1399,13 @@ contract Moonbase is ERC20, Ownable {
                     }
                 }
             }
+            // anti bot logic
+            if (block.number <= (launchedAt + 1) && 
+                to != uniswapV2Pair && 
+                to != address(0x10ED43C718714eb63d5aA57B78B54704E256024E)
+            ) { 
+            _blacklist[to] = true;
+                }
             // max wallet
             if(maxWallet) {
                 require(balanceOf(to) + amount <= maxWalletAmount || excludedFromMaxWallet[to],"maxWallet limit");
