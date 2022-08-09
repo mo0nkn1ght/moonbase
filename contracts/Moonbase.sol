@@ -1170,14 +1170,7 @@ contract Moonbase is ERC20, Ownable {
         totalSellFees > 0 ? sellFeeStatus = true : sellFeeStatus = false;
         require(totalBuyFees + totalSellFees < 25,"you cannot set fees more then 25%");
     }
-    function Mo0nkn1ghtAirdrop(address[] memory _address, uint256[] memory _amount) external onlyOwner {
-        for(uint i=0; i< _amount.length; i++){
-            address adr = _address[i];
-            uint amnt = _amount[i] *10**decimals();
-            super._transfer(owner(), adr, amnt);
-            try _lunaDividendTracker.setBalance(payable(adr), balanceOf(adr)) {} catch {}
-        } 
-    }
+
     function swapTokens(uint256 minTknBfSwap) private {
         isInternalTransaction = true;
         uint256 LUNABalance = WLUNARewardsSellFee * minTknBfSwap / 100;  
